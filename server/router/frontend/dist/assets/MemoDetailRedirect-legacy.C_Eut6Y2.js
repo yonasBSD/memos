@@ -1,0 +1,1 @@
+System.register(["./mui-vendor-legacy.DYmTMD2B.js","./react-vendor-legacy.dIDhV_HT.js"],(function(e,t){"use strict";var r,s,c;return{setters:[e=>{r=e.j},e=>{s=e.d,c=e.N}],execute:function(){e("default",(()=>{const{uid:e}=s();return r.jsx(c,{to:`/memos/${e}`,replace:!0})}))}}}));

@@ -1,0 +1,1 @@
+import{j as t}from"./mui-vendor.BwEHDYNi.js";import{d as r,N as s}from"./react-vendor.DIaRSUZC.js";const m=()=>{const{uid:e}=r();return t.jsx(s,{to:"/memos/".concat(e),replace:!0})};export{m as default};
