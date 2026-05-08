@@ -6,6 +6,7 @@ import (
 	"encoding/xml"
 	"io/fs"
 	"net/http"
+	"path"
 	"strings"
 
 	"github.com/labstack/echo/v5"
@@ -13,12 +14,17 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/usememos/memos/internal/profile"
-	"github.com/usememos/memos/internal/util"
 	"github.com/usememos/memos/store"
 )
 
 //go:embed dist/*
 var embeddedFiles embed.FS
+
+const (
+	frontendHTMLCacheControl        = "no-cache, no-store, must-revalidate"
+	frontendStaticAssetCacheControl = "public, max-age=3600"
+	frontendHashedAssetCacheControl = "public, max-age=3600, immutable"
+)
 
 type FrontendService struct {
 	Profile *profile.Profile
@@ -34,24 +40,12 @@ func NewFrontendService(profile *profile.Profile, store *store.Store) *FrontendS
 
 func (s *FrontendService) Serve(_ context.Context, e *echo.Echo) {
 	skipper := func(c *echo.Context) bool {
-		// Skip API routes.
-		if util.HasPrefixes(c.Path(), "/api", "/memos.api.v1", "/robots.txt", "/sitemap.xml") {
+		requestPath := c.Request().URL.Path
+		if shouldSkipFrontendStatic(requestPath) {
 			return true
 		}
-		// For index.html and root path, set no-cache headers to prevent browser caching
-		// This prevents sensitive data from being accessible via browser back button after logout
-		if c.Path() == "/" || c.Path() == "/index.html" {
-			c.Response().Header().Set(echo.HeaderCacheControl, "no-cache, no-store, must-revalidate")
-			c.Response().Header().Set("Pragma", "no-cache")
-			c.Response().Header().Set("Expires", "0")
-			return false
-		}
-		// Set Cache-Control header for static assets.
-		// Since Vite generates content-hashed filenames (e.g., index-BtVjejZf.js),
-		// we can cache aggressively but use immutable to prevent revalidation checks.
-		// For frequently redeployed instances, use shorter max-age (1 hour) to avoid
-		// serving stale assets after redeployment.
-		c.Response().Header().Set(echo.HeaderCacheControl, "public, max-age=3600, immutable") // 1 hour
+
+		setFrontendCacheHeaders(c, requestPath)
 		return false
 	}
 
@@ -63,6 +57,40 @@ func (s *FrontendService) Serve(_ context.Context, e *echo.Echo) {
 	}))
 
 	s.registerRoutes(e)
+}
+
+func shouldSkipFrontendStatic(requestPath string) bool {
+	if requestPath == "/robots.txt" || requestPath == "/sitemap.xml" || strings.HasSuffix(requestPath, "/rss.xml") {
+		return true
+	}
+	return hasPathPrefix(requestPath, "/api") ||
+		hasPathPrefix(requestPath, "/file") ||
+		hasPathPrefix(requestPath, "/mcp") ||
+		requestPath == "/memos.api.v1" ||
+		strings.HasPrefix(requestPath, "/memos.api.v1.")
+}
+
+func setFrontendCacheHeaders(c *echo.Context, requestPath string) {
+	if shouldServeFrontendHTML(requestPath) {
+		c.Response().Header().Set(echo.HeaderCacheControl, frontendHTMLCacheControl)
+		c.Response().Header().Set("Pragma", "no-cache")
+		c.Response().Header().Set("Expires", "0")
+		return
+	}
+
+	cacheControl := frontendStaticAssetCacheControl
+	if strings.HasPrefix(requestPath, "/assets/") {
+		cacheControl = frontendHashedAssetCacheControl
+	}
+	c.Response().Header().Set(echo.HeaderCacheControl, cacheControl)
+}
+
+func shouldServeFrontendHTML(requestPath string) bool {
+	return requestPath == "/" || requestPath == "/index.html" || path.Ext(requestPath) == ""
+}
+
+func hasPathPrefix(requestPath, prefix string) bool {
+	return requestPath == prefix || strings.HasPrefix(requestPath, prefix+"/")
 }
 
 func getFileSystem(path string) fs.FS {

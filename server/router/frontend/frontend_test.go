@@ -2,8 +2,10 @@ package frontend
 
 import (
 	"context"
+	"io/fs"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/labstack/echo/v5"
@@ -13,6 +15,87 @@ import (
 	"github.com/usememos/memos/store"
 	teststore "github.com/usememos/memos/store/test"
 )
+
+func TestFrontendService_StaticCacheHeaders(t *testing.T) {
+	ctx := context.Background()
+	testStore := teststore.NewTestingStore(ctx, t)
+
+	e := echo.New()
+	NewFrontendService(&profile.Profile{}, testStore).Serve(ctx, e)
+
+	hashedAssetPath := firstEmbeddedAssetPath(t, ".js")
+
+	tests := []struct {
+		name         string
+		path         string
+		cacheControl string
+		pragma       string
+		expires      string
+	}{
+		{
+			name:         "root html is not stored",
+			path:         "/",
+			cacheControl: frontendHTMLCacheControl,
+			pragma:       "no-cache",
+			expires:      "0",
+		},
+		{
+			name:         "index html is not stored",
+			path:         "/index.html",
+			cacheControl: frontendHTMLCacheControl,
+			pragma:       "no-cache",
+			expires:      "0",
+		},
+		{
+			name:         "spa fallback html is not stored",
+			path:         "/memos/publicmemo",
+			cacheControl: frontendHTMLCacheControl,
+			pragma:       "no-cache",
+			expires:      "0",
+		},
+		{
+			name:         "hashed asset is immutable",
+			path:         hashedAssetPath,
+			cacheControl: frontendHashedAssetCacheControl,
+		},
+		{
+			name:         "stable root asset is revalidated after max age",
+			path:         "/logo.webp",
+			cacheControl: frontendStaticAssetCacheControl,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, tt.path, nil)
+			rec := httptest.NewRecorder()
+			e.ServeHTTP(rec, req)
+
+			require.Equal(t, http.StatusOK, rec.Code)
+			require.Equal(t, tt.cacheControl, rec.Header().Get(echo.HeaderCacheControl))
+			require.Equal(t, tt.pragma, rec.Header().Get("Pragma"))
+			require.Equal(t, tt.expires, rec.Header().Get("Expires"))
+		})
+	}
+}
+
+func TestFrontendService_SkipsDynamicRoutes(t *testing.T) {
+	ctx := context.Background()
+	testStore := teststore.NewTestingStore(ctx, t)
+
+	e := echo.New()
+	NewFrontendService(&profile.Profile{}, testStore).Serve(ctx, e)
+	e.GET("/api/test", func(c *echo.Context) error {
+		return c.String(http.StatusOK, "ok")
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/api/test", nil)
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusOK, rec.Code)
+	require.Empty(t, rec.Header().Get(echo.HeaderCacheControl))
+}
 
 func TestFrontendService_RobotsTXT(t *testing.T) {
 	ctx := context.Background()
@@ -90,4 +173,19 @@ func TestFrontendService_SitemapRoutesRequireInstanceURL(t *testing.T) {
 
 		require.Equal(t, http.StatusNotFound, rec.Code)
 	}
+}
+
+func firstEmbeddedAssetPath(t *testing.T, suffix string) string {
+	t.Helper()
+
+	var assetPath string
+	require.NoError(t, fs.WalkDir(getFileSystem("dist"), "assets", func(path string, d fs.DirEntry, err error) error {
+		require.NoError(t, err)
+		if assetPath == "" && !d.IsDir() && strings.HasSuffix(path, suffix) {
+			assetPath = "/" + path
+		}
+		return nil
+	}))
+	require.NotEmpty(t, assetPath)
+	return assetPath
 }
