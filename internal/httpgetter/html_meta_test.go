@@ -1,8 +1,10 @@
 package httpgetter
 
 import (
+	"context"
 	"errors"
 	"io"
+	"net"
 	"net/http"
 	"strings"
 	"testing"
@@ -67,4 +69,53 @@ func TestGetHTMLMetaForInternal(t *testing.T) {
 
 func TestHTTPClientHasTimeout(t *testing.T) {
 	require.NotZero(t, httpClient.Timeout)
+}
+
+func TestSecureDialContextRejectsResolvedInternalIP(t *testing.T) {
+	originalLookupIPAddr := lookupIPAddr
+	originalDialContext := dialContext
+	t.Cleanup(func() {
+		lookupIPAddr = originalLookupIPAddr
+		dialContext = originalDialContext
+	})
+
+	lookupIPAddr = func(context.Context, string) ([]net.IPAddr, error) {
+		return []net.IPAddr{{IP: net.ParseIP("127.0.0.1")}}, nil
+	}
+	dialContext = func(context.Context, string, string) (net.Conn, error) {
+		t.Fatal("internal IP should be rejected before dialing")
+		return nil, nil
+	}
+
+	_, err := secureDialContext(context.Background(), "tcp", "rebind.example:80")
+	require.ErrorIs(t, err, ErrInternalIP)
+}
+
+func TestSecureDialContextDialsResolvedIP(t *testing.T) {
+	originalLookupIPAddr := lookupIPAddr
+	originalDialContext := dialContext
+	t.Cleanup(func() {
+		lookupIPAddr = originalLookupIPAddr
+		dialContext = originalDialContext
+	})
+
+	lookupIPAddr = func(context.Context, string) ([]net.IPAddr, error) {
+		return []net.IPAddr{{IP: net.ParseIP("93.184.216.34")}}, nil
+	}
+
+	var dialedAddress string
+	dialContext = func(_ context.Context, _ string, address string) (net.Conn, error) {
+		dialedAddress = address
+		clientConn, serverConn := net.Pipe()
+		t.Cleanup(func() {
+			clientConn.Close()
+			serverConn.Close()
+		})
+		return clientConn, nil
+	}
+
+	conn, err := secureDialContext(context.Background(), "tcp", "rebind.example:80")
+	require.NoError(t, err)
+	require.NotNil(t, conn)
+	require.Equal(t, "93.184.216.34:80", dialedAddress)
 }
