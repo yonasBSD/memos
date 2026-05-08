@@ -8,6 +8,9 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/fieldmaskpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	apiv1 "github.com/usememos/memos/proto/gen/api/v1"
@@ -525,6 +528,113 @@ func TestListMemoCommentsPaginates(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, secondPage.Memos, 1)
 	require.Empty(t, secondPage.NextPageToken)
+}
+
+func TestCreateMemoCommentInheritsParentVisibility(t *testing.T) {
+	ctx := context.Background()
+
+	ts := NewTestService(t)
+	defer ts.Cleanup()
+
+	owner, err := ts.CreateRegularUser(ctx, "private-comment-owner")
+	require.NoError(t, err)
+	ownerCtx := ts.CreateUserContext(ctx, owner.ID)
+
+	parent, err := ts.Service.CreateMemo(ownerCtx, &apiv1.CreateMemoRequest{
+		Memo: &apiv1.Memo{
+			Content:    "private parent",
+			Visibility: apiv1.Visibility_PRIVATE,
+		},
+	})
+	require.NoError(t, err)
+
+	comment, err := ts.Service.CreateMemoComment(ownerCtx, &apiv1.CreateMemoCommentRequest{
+		Name: parent.Name,
+		Comment: &apiv1.Memo{
+			Content:    "client requested public comment",
+			Visibility: apiv1.Visibility_PUBLIC,
+		},
+	})
+	require.NoError(t, err)
+	require.Equal(t, apiv1.Visibility_PRIVATE, comment.Visibility)
+
+	updatedComment, err := ts.Service.UpdateMemo(ownerCtx, &apiv1.UpdateMemoRequest{
+		Memo: &apiv1.Memo{
+			Name:       comment.Name,
+			Visibility: apiv1.Visibility_PUBLIC,
+		},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"visibility"}},
+	})
+	require.NoError(t, err)
+	require.Equal(t, apiv1.Visibility_PRIVATE, updatedComment.Visibility)
+
+	_, err = ts.Service.GetMemo(ctx, &apiv1.GetMemoRequest{Name: comment.Name})
+	require.Equal(t, codes.Unauthenticated, status.Code(err))
+}
+
+func TestGetMemoCommentRequiresParentReadAccess(t *testing.T) {
+	ctx := context.Background()
+
+	ts := NewTestService(t)
+	defer ts.Cleanup()
+
+	owner, err := ts.CreateRegularUser(ctx, "legacy-comment-owner")
+	require.NoError(t, err)
+	ownerCtx := ts.CreateUserContext(ctx, owner.ID)
+
+	other, err := ts.CreateRegularUser(ctx, "legacy-comment-other")
+	require.NoError(t, err)
+	otherCtx := ts.CreateUserContext(ctx, other.ID)
+
+	parent, err := ts.Service.CreateMemo(ownerCtx, &apiv1.CreateMemoRequest{
+		Memo: &apiv1.Memo{
+			Content:    "private parent for legacy comment",
+			Visibility: apiv1.Visibility_PRIVATE,
+		},
+	})
+	require.NoError(t, err)
+
+	legacyComment, err := ts.Store.CreateMemo(ctx, &store.Memo{
+		UID:        "legacy-public-comment",
+		CreatorID:  owner.ID,
+		Content:    "legacy public comment under private parent",
+		Visibility: store.Public,
+	})
+	require.NoError(t, err)
+
+	parentUID := parent.Name[len("memos/"):]
+	parentMemo, err := ts.Store.GetMemo(ctx, &store.FindMemo{UID: &parentUID})
+	require.NoError(t, err)
+	require.NotNil(t, parentMemo)
+
+	_, err = ts.Store.UpsertMemoRelation(ctx, &store.MemoRelation{
+		MemoID:        legacyComment.ID,
+		RelatedMemoID: parentMemo.ID,
+		Type:          store.MemoRelationComment,
+	})
+	require.NoError(t, err)
+
+	commentName := "memos/" + legacyComment.UID
+	_, err = ts.Service.GetMemo(ctx, &apiv1.GetMemoRequest{Name: commentName})
+	require.Equal(t, codes.Unauthenticated, status.Code(err))
+
+	_, err = ts.Service.GetMemo(otherCtx, &apiv1.GetMemoRequest{Name: commentName})
+	require.Equal(t, codes.PermissionDenied, status.Code(err))
+
+	comment, err := ts.Service.GetMemo(ownerCtx, &apiv1.GetMemoRequest{Name: commentName})
+	require.NoError(t, err)
+	require.Equal(t, parent.Name, comment.GetParent())
+
+	_, err = ts.Service.ListMemoComments(ctx, &apiv1.ListMemoCommentsRequest{Name: parent.Name})
+	require.Equal(t, codes.Unauthenticated, status.Code(err))
+
+	_, err = ts.Service.ListMemoComments(otherCtx, &apiv1.ListMemoCommentsRequest{Name: parent.Name})
+	require.Equal(t, codes.PermissionDenied, status.Code(err))
+
+	comments, err := ts.Service.ListMemoComments(ownerCtx, &apiv1.ListMemoCommentsRequest{Name: parent.Name})
+	require.NoError(t, err)
+	require.Len(t, comments.Memos, 1)
+	require.Equal(t, commentName, comments.Memos[0].Name)
 }
 
 // TestCreateMemoWithCustomTimestamps tests that custom timestamps can be set when creating memos and comments.
