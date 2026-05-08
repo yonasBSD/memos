@@ -39,6 +39,7 @@ func NewFrontendService(profile *profile.Profile, store *store.Store) *FrontendS
 }
 
 func (s *FrontendService) Serve(_ context.Context, e *echo.Echo) {
+	frontendFS := getFileSystem("dist")
 	skipper := func(c *echo.Context) bool {
 		requestPath := c.Request().URL.Path
 		if shouldSkipFrontendStatic(requestPath) {
@@ -49,14 +50,33 @@ func (s *FrontendService) Serve(_ context.Context, e *echo.Echo) {
 		return false
 	}
 
-	// Route to serve the main app with HTML5 fallback for SPA behavior.
+	// Route to serve the frontend static assets.
 	e.Use(middleware.StaticWithConfig(middleware.StaticConfig{
-		Filesystem: getFileSystem("dist"),
-		HTML5:      true, // Enable fallback to index.html
+		Filesystem: frontendFS,
 		Skipper:    skipper,
 	}))
 
+	e.Use(spaFallbackMiddleware(frontendFS))
 	s.registerRoutes(e)
+}
+
+func spaFallbackMiddleware(frontendFS fs.FS) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c *echo.Context) error {
+			err := next(c)
+			if err == nil {
+				return nil
+			}
+
+			requestPath := c.Request().URL.Path
+			if shouldSkipFrontendStatic(requestPath) || !shouldServeFrontendHTML(requestPath) || echo.StatusCode(err) != http.StatusNotFound {
+				return err
+			}
+
+			setFrontendCacheHeaders(c, requestPath)
+			return c.FileFS("index.html", frontendFS)
+		}
+	}
 }
 
 func shouldSkipFrontendStatic(requestPath string) bool {

@@ -2,10 +2,8 @@ package frontend
 
 import (
 	"context"
-	"io/fs"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 
 	"github.com/labstack/echo/v5"
@@ -16,15 +14,7 @@ import (
 	teststore "github.com/usememos/memos/store/test"
 )
 
-func TestFrontendService_StaticCacheHeaders(t *testing.T) {
-	ctx := context.Background()
-	testStore := teststore.NewTestingStore(ctx, t)
-
-	e := echo.New()
-	NewFrontendService(&profile.Profile{}, testStore).Serve(ctx, e)
-
-	hashedAssetPath := firstEmbeddedAssetPath(t, ".js")
-
+func TestFrontendService_CacheHeaderRules(t *testing.T) {
 	tests := []struct {
 		name         string
 		path         string
@@ -55,13 +45,66 @@ func TestFrontendService_StaticCacheHeaders(t *testing.T) {
 		},
 		{
 			name:         "hashed asset is immutable",
-			path:         hashedAssetPath,
+			path:         "/assets/index-deadbeef.js",
 			cacheControl: frontendHashedAssetCacheControl,
 		},
 		{
 			name:         "stable root asset is revalidated after max age",
 			path:         "/logo.webp",
 			cacheControl: frontendStaticAssetCacheControl,
+		},
+	}
+
+	e := echo.New()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, tt.path, nil)
+			rec := httptest.NewRecorder()
+			c := e.NewContext(req, rec)
+
+			setFrontendCacheHeaders(c, tt.path)
+
+			require.Equal(t, tt.cacheControl, rec.Header().Get(echo.HeaderCacheControl))
+			require.Equal(t, tt.pragma, rec.Header().Get("Pragma"))
+			require.Equal(t, tt.expires, rec.Header().Get("Expires"))
+		})
+	}
+}
+
+func TestFrontendService_StaticCacheHeaders(t *testing.T) {
+	ctx := context.Background()
+	testStore := teststore.NewTestingStore(ctx, t)
+
+	e := echo.New()
+	NewFrontendService(&profile.Profile{}, testStore).Serve(ctx, e)
+
+	tests := []struct {
+		name         string
+		path         string
+		cacheControl string
+		pragma       string
+		expires      string
+	}{
+		{
+			name:         "root html is not stored",
+			path:         "/",
+			cacheControl: frontendHTMLCacheControl,
+			pragma:       "no-cache",
+			expires:      "0",
+		},
+		{
+			name:         "index html is not stored",
+			path:         "/index.html",
+			cacheControl: frontendHTMLCacheControl,
+			pragma:       "no-cache",
+			expires:      "0",
+		},
+		{
+			name:         "spa fallback html is not stored",
+			path:         "/memos/publicmemo",
+			cacheControl: frontendHTMLCacheControl,
+			pragma:       "no-cache",
+			expires:      "0",
 		},
 	}
 
@@ -77,6 +120,20 @@ func TestFrontendService_StaticCacheHeaders(t *testing.T) {
 			require.Equal(t, tt.expires, rec.Header().Get("Expires"))
 		})
 	}
+}
+
+func TestFrontendService_MissingAssetDoesNotFallbackToIndex(t *testing.T) {
+	ctx := context.Background()
+	testStore := teststore.NewTestingStore(ctx, t)
+
+	e := echo.New()
+	NewFrontendService(&profile.Profile{}, testStore).Serve(ctx, e)
+
+	req := httptest.NewRequest(http.MethodGet, "/assets/missing.js", nil)
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusNotFound, rec.Code)
 }
 
 func TestFrontendService_SkipsDynamicRoutes(t *testing.T) {
@@ -173,19 +230,4 @@ func TestFrontendService_SitemapRoutesRequireInstanceURL(t *testing.T) {
 
 		require.Equal(t, http.StatusNotFound, rec.Code)
 	}
-}
-
-func firstEmbeddedAssetPath(t *testing.T, suffix string) string {
-	t.Helper()
-
-	var assetPath string
-	require.NoError(t, fs.WalkDir(getFileSystem("dist"), "assets", func(path string, d fs.DirEntry, err error) error {
-		require.NoError(t, err)
-		if assetPath == "" && !d.IsDir() && strings.HasSuffix(path, suffix) {
-			assetPath = "/" + path
-		}
-		return nil
-	}))
-	require.NotEmpty(t, assetPath)
-	return assetPath
 }
