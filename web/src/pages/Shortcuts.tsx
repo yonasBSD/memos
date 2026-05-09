@@ -179,10 +179,6 @@ const Shortcuts = () => {
   const isSaving = createState.isLoading || updateState.isLoading;
 
   useEffect(() => {
-    refetchSettings();
-  }, [refetchSettings]);
-
-  useEffect(() => {
     const state = location.state as ShortcutsRouteState | null;
     if (!state) return;
 

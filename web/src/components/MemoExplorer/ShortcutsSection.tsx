@@ -1,5 +1,5 @@
 import { Edit3Icon, MoreVerticalIcon, PlusIcon, TrashIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import ConfirmDialog from "@/components/ConfirmDialog";
@@ -28,10 +28,6 @@ function ShortcutsSection() {
   const { shortcuts, refetchSettings } = useAuth();
   const { shortcut: selectedShortcut, setShortcut } = useMemoFilterContext();
   const [deleteTarget, setDeleteTarget] = useState<Shortcut | undefined>();
-
-  useEffect(() => {
-    refetchSettings();
-  }, [refetchSettings]);
 
   const handleDeleteShortcut = async (shortcut: Shortcut) => {
     setDeleteTarget(shortcut);

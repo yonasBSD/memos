@@ -84,10 +84,15 @@ export function useLiveMemoRefresh() {
     const connect = async () => {
       if (!mounted) return;
 
+      if (!currentUserName) {
+        setSSEStatus("disconnected");
+        return;
+      }
+
       const token = getAccessToken();
       if (!token) {
         setSSEStatus("disconnected");
-        // Not logged in; do not retry. Effect will re-run when currentUser is set (login).
+        // Not logged in; do not retry. Effect will re-run when currentUser is set.
         return;
       }
 

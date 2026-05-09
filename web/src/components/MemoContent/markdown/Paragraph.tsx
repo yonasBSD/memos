@@ -8,7 +8,7 @@ interface ParagraphProps extends React.HTMLAttributes<HTMLParagraphElement>, Rea
   children: React.ReactNode;
 }
 
-function getSingleLinkHref(node?: Element): string | undefined {
+export function getSingleLinkHref(node?: Element): string | undefined {
   if (!node || node.tagName !== "p") {
     return undefined;
   }
@@ -27,7 +27,20 @@ function getSingleLinkHref(node?: Element): string | undefined {
   }
 
   const href = onlyChild.properties?.href;
-  return typeof href === "string" ? href : undefined;
+  if (typeof href !== "string") {
+    return undefined;
+  }
+
+  const meaningfulLinkChildren = onlyChild.children.filter((child) => {
+    return !(child.type === "text" && child.value.trim() === "");
+  });
+
+  if (meaningfulLinkChildren.length !== 1) {
+    return undefined;
+  }
+
+  const onlyLinkChild = meaningfulLinkChildren[0];
+  return onlyLinkChild.type === "text" && onlyLinkChild.value === href ? href : undefined;
 }
 
 export const Paragraph = ({ children, className, node, ...props }: ParagraphProps) => {

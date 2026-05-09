@@ -53,20 +53,34 @@ func (s *APIV1Service) listUsernamesByID(ctx context.Context, userIDs []int32) (
 	return usernamesByID, nil
 }
 
-func (s *APIV1Service) ListAllUserStats(ctx context.Context, _ *v1pb.ListAllUserStatsRequest) (*v1pb.ListAllUserStatsResponse, error) {
-	normalStatus := store.Normal
+func (s *APIV1Service) ListAllUserStats(ctx context.Context, request *v1pb.ListAllUserStatsRequest) (*v1pb.ListAllUserStatsResponse, error) {
+	rowStatus := convertStateToStore(request.State)
 	memoFind := &store.FindMemo{
 		// Exclude comments by default.
 		ExcludeComments: true,
 		ExcludeContent:  true,
-		RowStatus:       &normalStatus,
+		RowStatus:       &rowStatus,
 	}
 
 	currentUser, err := s.fetchCurrentUser(ctx)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to get user: %v", err)
 	}
-	if currentUser == nil {
+
+	if request.Filter != "" {
+		if err := s.validateFilter(ctx, request.Filter); err != nil {
+			return nil, status.Errorf(codes.InvalidArgument, "invalid filter: %v", err)
+		}
+		memoFind.Filters = append(memoFind.Filters, request.Filter)
+	}
+
+	if request.State == v1pb.State_ARCHIVED {
+		// Archived memos are only visible to their creator.
+		if currentUser == nil {
+			return &v1pb.ListAllUserStatsResponse{}, nil
+		}
+		memoFind.CreatorID = &currentUser.ID
+	} else if currentUser == nil {
 		memoFind.VisibilityList = []store.Visibility{store.Public}
 	} else {
 		if memoFind.CreatorID == nil {

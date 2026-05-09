@@ -158,3 +158,45 @@ func TestGetUserStats_MemoUpdatedTimestamps(t *testing.T) {
 		"updated_ts should be after created_ts after an edit",
 	)
 }
+
+func TestListAllUserStats_FilterExcludesPrivateMemos(t *testing.T) {
+	ctx := context.Background()
+
+	ts := NewTestService(t)
+	defer ts.Cleanup()
+
+	user, err := ts.CreateHostUser(ctx, "stats-filter-user")
+	require.NoError(t, err)
+	userCtx := ts.CreateUserContext(ctx, user.ID)
+
+	_, err = ts.Store.CreateMemo(ctx, &store.Memo{
+		UID:        "stats-filter-public",
+		CreatorID:  user.ID,
+		Content:    "public memo",
+		Visibility: store.Public,
+		Payload:    &storepb.MemoPayload{Tags: []string{"public"}},
+	})
+	require.NoError(t, err)
+	_, err = ts.Store.CreateMemo(ctx, &store.Memo{
+		UID:        "stats-filter-private",
+		CreatorID:  user.ID,
+		Content:    "private memo",
+		Visibility: store.Private,
+		Payload:    &storepb.MemoPayload{Tags: []string{"private"}},
+	})
+	require.NoError(t, err)
+
+	unfilteredResp, err := ts.Service.ListAllUserStats(userCtx, &v1pb.ListAllUserStatsRequest{})
+	require.NoError(t, err)
+	require.Len(t, unfilteredResp.Stats, 1)
+	require.Equal(t, int32(1), unfilteredResp.Stats[0].TagCount["public"])
+	require.Equal(t, int32(1), unfilteredResp.Stats[0].TagCount["private"])
+
+	filteredResp, err := ts.Service.ListAllUserStats(userCtx, &v1pb.ListAllUserStatsRequest{
+		Filter: `visibility in ["PUBLIC", "PROTECTED"]`,
+	})
+	require.NoError(t, err)
+	require.Len(t, filteredResp.Stats, 1)
+	require.Equal(t, int32(1), filteredResp.Stats[0].TagCount["public"])
+	require.NotContains(t, filteredResp.Stats[0].TagCount, "private")
+}

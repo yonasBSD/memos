@@ -2241,6 +2241,24 @@ paths:
                 - UserService
             description: ListAllUserStats returns statistics for all users.
             operationId: UserService_ListAllUserStats
+            parameters:
+                - name: state
+                  in: query
+                  description: Optional. The state of memos to include. Defaults to NORMAL.
+                  schema:
+                    enum:
+                        - STATE_UNSPECIFIED
+                        - NORMAL
+                        - ARCHIVED
+                    type: string
+                    format: enum
+                - name: filter
+                  in: query
+                  description: |-
+                    Optional. Filter to apply to memo stats.
+                     Uses the same filter syntax as ListMemos.
+                  schema:
+                    type: string
             responses:
                 "200":
                     description: OK
