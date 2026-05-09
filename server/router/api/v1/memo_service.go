@@ -11,6 +11,7 @@ import (
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/usememos/memos/internal/httpgetter"
@@ -678,13 +679,16 @@ func (s *APIV1Service) CreateMemoComment(ctx context.Context, request *v1pb.Crea
 		return nil, status.Errorf(codes.InvalidArgument, "comment is required")
 	}
 
-	comment := *request.Comment
+	comment, ok := proto.Clone(request.Comment).(*v1pb.Memo)
+	if !ok {
+		return nil, status.Errorf(codes.Internal, "failed to clone memo comment")
+	}
 	comment.Visibility = convertVisibilityFromStore(relatedMemo.Visibility)
 
 	// Create the memo comment first; suppress the generic memo.created SSE event
 	// since CreateMemoComment broadcasts memo.comment.created for the parent instead.
 	memoComment, err := s.CreateMemo(withSuppressMentionNotifications(withSuppressSSE(ctx)), &v1pb.CreateMemoRequest{
-		Memo:   &comment,
+		Memo:   comment,
 		MemoId: request.CommentId,
 	})
 	if err != nil {
