@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
-import { getAccessToken } from "@/auth-state";
+import { getRequestToken, refreshAccessToken } from "@/connect";
 import { useAuth } from "@/contexts/AuthContext";
 import { memoKeys } from "@/hooks/useMemoQueries";
 import { userKeys } from "@/hooks/useUserQueries";
@@ -89,7 +89,7 @@ export function useLiveMemoRefresh() {
         return;
       }
 
-      const token = getAccessToken();
+      let token = await getRequestToken();
       if (!token) {
         setSSEStatus("disconnected");
         // Not logged in; do not retry. Effect will re-run when currentUser is set.
@@ -101,13 +101,16 @@ export function useLiveMemoRefresh() {
       abortControllerRef.current = abortController;
 
       try {
-        const response = await fetch("/api/v1/sse", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          signal: abortController.signal,
-          credentials: "include",
-        });
+        let response = await fetchSSEStream(token, abortController.signal);
+
+        if (response.status === 401) {
+          await refreshAccessToken();
+          token = await getRequestToken();
+          if (!token) {
+            throw new Error("SSE connection failed: missing token after refresh");
+          }
+          response = await fetchSSEStream(token, abortController.signal);
+        }
 
         if (!response.ok || !response.body) {
           throw new Error(`SSE connection failed: ${response.status}`);
@@ -195,6 +198,17 @@ export function useLiveMemoRefresh() {
 // ---------------------------------------------------------------------------
 // Event handling
 // ---------------------------------------------------------------------------
+
+function fetchSSEStream(token: string, signal: AbortSignal): Promise<Response> {
+  return fetch("/api/v1/sse", {
+    headers: {
+      Accept: "text/event-stream",
+      Authorization: `Bearer ${token}`,
+    },
+    signal,
+    credentials: "include",
+  });
+}
 
 interface SSEChangeEvent {
   type: (typeof SSE_EVENT_TYPES)[keyof typeof SSE_EVENT_TYPES];
