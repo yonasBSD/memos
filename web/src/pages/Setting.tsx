@@ -25,7 +25,7 @@ const Setting = () => {
   const sm = useMediaQuery("sm");
   const location = useLocation();
   const user = useCurrentUser();
-  const { profile, fetchSetting } = useInstance();
+  const { profile, fetchSettings } = useInstance();
   const [selectedSection, setSelectedSection] = useState<SettingSectionKey>(DEFAULT_SETTING_SECTION);
   const isHost = user?.role === User_Role.ADMIN;
   const commitUrl = isCommitSha(profile.commit) ? `${GITHUB_COMMIT_URL_PREFIX}${profile.commit}` : "";
@@ -52,10 +52,8 @@ const Setting = () => {
       return;
     }
     const preloadSettingKeys = new Set(sectionGroups.admin.flatMap((section) => section.preloadSettingKeys ?? []));
-    for (const key of preloadSettingKeys) {
-      fetchSetting(key);
-    }
-  }, [fetchSetting, isHost, sectionGroups.admin]);
+    void fetchSettings([...preloadSettingKeys]);
+  }, [fetchSettings, isHost, sectionGroups.admin]);
 
   const handleSectionSelectorItemClick = (section: SettingSectionKey) => {
     window.location.hash = section;

@@ -8,6 +8,7 @@ export const instanceKeys = {
   profile: () => [...instanceKeys.all, "profile"] as const,
   settings: () => [...instanceKeys.all, "settings"] as const,
   setting: (key: InstanceSetting_Key) => [...instanceKeys.settings(), key] as const,
+  settingsBatch: (keys: InstanceSetting_Key[]) => [...instanceKeys.settings(), "batch", ...keys] as const,
   stats: () => [...instanceKeys.all, "stats"] as const,
 };
 
@@ -47,6 +48,20 @@ export function useInstanceSetting(key: InstanceSetting_Key) {
         name: buildInstanceSettingName(key),
       });
       return setting;
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+}
+
+// Hook to fetch multiple instance settings
+export function useInstanceSettings(keys: InstanceSetting_Key[]) {
+  return useQuery({
+    queryKey: instanceKeys.settingsBatch(keys),
+    queryFn: async () => {
+      const response = await instanceServiceClient.batchGetInstanceSettings({
+        names: keys.map(buildInstanceSettingName),
+      });
+      return response.settings;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
   });

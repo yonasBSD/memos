@@ -498,6 +498,31 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /api/v1/instance/settings:batchGet:
+        post:
+            tags:
+                - InstanceService
+            description: Batch gets instance settings.
+            operationId: InstanceService_BatchGetInstanceSettings
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/BatchGetInstanceSettingsRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/BatchGetInstanceSettingsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /api/v1/instance/stats:
         get:
             tags:
@@ -2326,6 +2351,28 @@ components:
                     type: array
                     items:
                         type: string
+        BatchGetInstanceSettingsRequest:
+            required:
+                - names
+            type: object
+            properties:
+                names:
+                    type: array
+                    items:
+                        type: string
+                    description: |-
+                        The resource names of the instance settings.
+                         Format: instance/settings/{setting}
+            description: Request message for BatchGetInstanceSettings method.
+        BatchGetInstanceSettingsResponse:
+            type: object
+            properties:
+                settings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/InstanceSetting'
+                    description: The instance settings in the same order as the input names.
+            description: Response message for BatchGetInstanceSettings method.
         BatchGetLinkMetadataRequest:
             required:
                 - urls

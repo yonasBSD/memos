@@ -289,6 +289,71 @@ func TestGetInstanceSetting(t *testing.T) {
 	})
 }
 
+func TestBatchGetInstanceSettings(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("BatchGetInstanceSettings - returns settings in request order", func(t *testing.T) {
+		ts := NewTestService(t)
+		defer ts.Cleanup()
+
+		resp, err := ts.Service.BatchGetInstanceSettings(ctx, &v1pb.BatchGetInstanceSettingsRequest{
+			Names: []string{
+				"instance/settings/TAGS",
+				"instance/settings/GENERAL",
+				"instance/settings/MEMO_RELATED",
+			},
+		})
+
+		require.NoError(t, err)
+		require.NotNil(t, resp)
+		require.Len(t, resp.Settings, 3)
+		require.Equal(t, "instance/settings/TAGS", resp.Settings[0].Name)
+		require.NotNil(t, resp.Settings[0].GetTagsSetting())
+		require.Equal(t, "instance/settings/GENERAL", resp.Settings[1].Name)
+		require.NotNil(t, resp.Settings[1].GetGeneralSetting())
+		require.Equal(t, "instance/settings/MEMO_RELATED", resp.Settings[2].Name)
+		require.NotNil(t, resp.Settings[2].GetMemoRelatedSetting())
+	})
+
+	t.Run("BatchGetInstanceSettings - admin-only setting requires admin", func(t *testing.T) {
+		ts := NewTestService(t)
+		defer ts.Cleanup()
+
+		regularUser, err := ts.CreateRegularUser(ctx, "batch-user")
+		require.NoError(t, err)
+		userCtx := ts.CreateUserContext(ctx, regularUser.ID)
+
+		_, err = ts.Service.BatchGetInstanceSettings(userCtx, &v1pb.BatchGetInstanceSettingsRequest{
+			Names: []string{"instance/settings/GENERAL", "instance/settings/NOTIFICATION"},
+		})
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "permission denied")
+
+		admin, err := ts.CreateHostUser(ctx, "batch-admin")
+		require.NoError(t, err)
+		adminCtx := ts.CreateUserContext(ctx, admin.ID)
+
+		resp, err := ts.Service.BatchGetInstanceSettings(adminCtx, &v1pb.BatchGetInstanceSettingsRequest{
+			Names: []string{"instance/settings/GENERAL", "instance/settings/NOTIFICATION"},
+		})
+		require.NoError(t, err)
+		require.Len(t, resp.Settings, 2)
+		require.NotNil(t, resp.Settings[1].GetNotificationSetting())
+	})
+
+	t.Run("BatchGetInstanceSettings - invalid setting name", func(t *testing.T) {
+		ts := NewTestService(t)
+		defer ts.Cleanup()
+
+		_, err := ts.Service.BatchGetInstanceSettings(ctx, &v1pb.BatchGetInstanceSettingsRequest{
+			Names: []string{"instance/settings/GENERAL", "invalid/setting/name"},
+		})
+
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "invalid instance setting name")
+	})
+}
+
 func TestTestInstanceEmailSettingAuthorization(t *testing.T) {
 	ctx := context.Background()
 	ts := NewTestService(t)

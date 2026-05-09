@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock dependencies BEFORE importing the hook under test.
 vi.mock("@/hooks/useUserQueries", () => ({
+  useAllUserStats: vi.fn(),
   useUserStats: vi.fn(),
 }));
 vi.mock("@/hooks/useMemoQueries", () => ({
@@ -22,7 +23,7 @@ vi.mock("@/contexts/ViewContext", async () => {
   };
 });
 
-import { useUserStats } from "@/hooks/useUserQueries";
+import { useAllUserStats, useUserStats } from "@/hooks/useUserQueries";
 import { useFilteredMemoStats } from "@/hooks/useFilteredMemoStats";
 
 const wrapper = ({ children }: { children: ReactNode }) => children as never;
@@ -34,6 +35,10 @@ const ts = (year: number, month: number, day: number) => ({
 
 describe("useFilteredMemoStats", () => {
   beforeEach(() => {
+    vi.mocked(useAllUserStats).mockReturnValue({
+      data: [],
+      isLoading: false,
+    } as ReturnType<typeof useAllUserStats>);
     vi.mocked(useUserStats).mockReturnValue({
       data: {
         memoCreatedTimestamps: [ts(2026, 5, 1), ts(2026, 5, 1), ts(2026, 5, 2)],

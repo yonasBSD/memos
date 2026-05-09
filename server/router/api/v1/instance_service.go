@@ -24,7 +24,26 @@ const (
 	maxTranscriptionConfigModelLength    = 256
 	maxTranscriptionConfigLanguageLength = 32
 	maxTranscriptionConfigPromptLength   = 4096
+	maxBatchGetInstanceSettings          = 100
 )
+
+type instanceSettingCaller struct {
+	user   *store.User
+	loaded bool
+}
+
+func (c *instanceSettingCaller) currentUser(ctx context.Context, service *APIV1Service) (*store.User, error) {
+	if c.loaded {
+		return c.user, nil
+	}
+	user, err := service.fetchCurrentUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+	c.user = user
+	c.loaded = true
+	return c.user, nil
+}
 
 // GetInstanceProfile returns the instance profile.
 func (s *APIV1Service) GetInstanceProfile(ctx context.Context, _ *v1pb.GetInstanceProfileRequest) (*v1pb.InstanceProfile, error) {
@@ -44,7 +63,30 @@ func (s *APIV1Service) GetInstanceProfile(ctx context.Context, _ *v1pb.GetInstan
 }
 
 func (s *APIV1Service) GetInstanceSetting(ctx context.Context, request *v1pb.GetInstanceSettingRequest) (*v1pb.InstanceSetting, error) {
-	instanceSettingKeyString, err := ExtractInstanceSettingKeyFromName(request.Name)
+	return s.getInstanceSetting(ctx, request.Name, &instanceSettingCaller{})
+}
+
+// BatchGetInstanceSettings returns multiple instance settings in request order.
+func (s *APIV1Service) BatchGetInstanceSettings(ctx context.Context, request *v1pb.BatchGetInstanceSettingsRequest) (*v1pb.BatchGetInstanceSettingsResponse, error) {
+	if len(request.Names) > maxBatchGetInstanceSettings {
+		return nil, status.Errorf(codes.InvalidArgument, "too many instance setting names (max %d)", maxBatchGetInstanceSettings)
+	}
+
+	caller := &instanceSettingCaller{}
+	settings := make([]*v1pb.InstanceSetting, 0, len(request.Names))
+	for _, name := range request.Names {
+		setting, err := s.getInstanceSetting(ctx, name, caller)
+		if err != nil {
+			return nil, err
+		}
+		settings = append(settings, setting)
+	}
+
+	return &v1pb.BatchGetInstanceSettingsResponse{Settings: settings}, nil
+}
+
+func (s *APIV1Service) getInstanceSetting(ctx context.Context, name string, caller *instanceSettingCaller) (*v1pb.InstanceSetting, error) {
+	instanceSettingKeyString, err := ExtractInstanceSettingKeyFromName(name)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid instance setting name: %v", err)
 	}
@@ -86,7 +128,7 @@ func (s *APIV1Service) GetInstanceSetting(ctx context.Context, request *v1pb.Get
 	// Storage and notification settings contain credentials; restrict to admins only.
 	if instanceSetting.Key == storepb.InstanceSettingKey_STORAGE ||
 		instanceSetting.Key == storepb.InstanceSettingKey_NOTIFICATION {
-		user, err := s.fetchCurrentUser(ctx)
+		user, err := caller.currentUser(ctx, s)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "failed to get current user: %v", err)
 		}
@@ -99,7 +141,7 @@ func (s *APIV1Service) GetInstanceSetting(ctx context.Context, request *v1pb.Get
 	}
 	isAdminCaller := false
 	if instanceSetting.Key == storepb.InstanceSettingKey_AI {
-		user, err := s.fetchCurrentUser(ctx)
+		user, err := caller.currentUser(ctx, s)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "failed to get current user: %v", err)
 		}

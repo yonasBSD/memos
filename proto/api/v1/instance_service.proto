@@ -26,6 +26,14 @@ service InstanceService {
     option (google.api.method_signature) = "name";
   }
 
+  // Batch gets instance settings.
+  rpc BatchGetInstanceSettings(BatchGetInstanceSettingsRequest) returns (BatchGetInstanceSettingsResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/instance/settings:batchGet"
+      body: "*"
+    };
+  }
+
   // Updates an instance setting.
   rpc UpdateInstanceSetting(UpdateInstanceSettingRequest) returns (InstanceSetting) {
     option (google.api.http) = {
@@ -282,6 +290,22 @@ message GetInstanceSettingRequest {
     (google.api.field_behavior) = REQUIRED,
     (google.api.resource_reference) = {type: "memos.api.v1/InstanceSetting"}
   ];
+}
+
+// Request message for BatchGetInstanceSettings method.
+message BatchGetInstanceSettingsRequest {
+  // The resource names of the instance settings.
+  // Format: instance/settings/{setting}
+  repeated string names = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "memos.api.v1/InstanceSetting"}
+  ];
+}
+
+// Response message for BatchGetInstanceSettings method.
+message BatchGetInstanceSettingsResponse {
+  // The instance settings in the same order as the input names.
+  repeated InstanceSetting settings = 1;
 }
 
 // Request message for UpdateInstanceSetting method.

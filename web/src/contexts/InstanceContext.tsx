@@ -47,6 +47,7 @@ interface InstanceContextValue extends InstanceState {
   aiSetting: InstanceSetting_AISetting;
   initialize: () => Promise<void>;
   fetchSetting: (key: InstanceSetting_Key) => Promise<void>;
+  fetchSettings: (keys: InstanceSetting_Key[]) => Promise<void>;
   updateSetting: (setting: InstanceSetting) => Promise<void>;
 }
 
@@ -117,15 +118,20 @@ export function InstanceProvider({ children }: { children: ReactNode }) {
     try {
       const profile = await instanceServiceClient.getInstanceProfile({});
 
-      const [generalSetting, memoRelatedSettingResponse, tagsSettingResponse] = await Promise.all([
-        instanceServiceClient.getInstanceSetting({ name: buildInstanceSettingName(InstanceSetting_Key.GENERAL) }),
-        instanceServiceClient.getInstanceSetting({ name: buildInstanceSettingName(InstanceSetting_Key.MEMO_RELATED) }),
-        instanceServiceClient.getInstanceSetting({ name: buildInstanceSettingName(InstanceSetting_Key.TAGS) }),
-      ]);
+      const settingsResponse = await instanceServiceClient.batchGetInstanceSettings({
+        names: [
+          buildInstanceSettingName(InstanceSetting_Key.GENERAL),
+          buildInstanceSettingName(InstanceSetting_Key.MEMO_RELATED),
+          buildInstanceSettingName(InstanceSetting_Key.TAGS),
+        ],
+      });
+      for (const setting of settingsResponse.settings) {
+        fetchedSettingsRef.current.add(setting.name);
+      }
 
       setState({
         profile,
-        settings: [generalSetting, memoRelatedSettingResponse, tagsSettingResponse],
+        settings: settingsResponse.settings,
         isInitialized: true,
         isLoading: false,
         profileLoaded: true,
@@ -137,6 +143,31 @@ export function InstanceProvider({ children }: { children: ReactNode }) {
         isInitialized: true,
         isLoading: false,
       }));
+    }
+  }, []);
+
+  const fetchSettings = useCallback(async (keys: InstanceSetting_Key[]) => {
+    const names = keys.map(buildInstanceSettingName).filter((name) => !fetchedSettingsRef.current.has(name));
+    if (names.length === 0) {
+      return;
+    }
+
+    for (const name of names) {
+      fetchedSettingsRef.current.add(name);
+    }
+
+    try {
+      const response = await instanceServiceClient.batchGetInstanceSettings({ names });
+      const fetchedNames = new Set(response.settings.map((setting) => setting.name));
+      setState((prev) => ({
+        ...prev,
+        settings: [...prev.settings.filter((setting) => !fetchedNames.has(setting.name)), ...response.settings],
+      }));
+    } catch (error) {
+      for (const name of names) {
+        fetchedSettingsRef.current.delete(name);
+      }
+      throw error;
     }
   }, []);
 
@@ -178,6 +209,7 @@ export function InstanceProvider({ children }: { children: ReactNode }) {
       aiSetting,
       initialize,
       fetchSetting,
+      fetchSettings,
       updateSetting,
     }),
     [
@@ -190,6 +222,7 @@ export function InstanceProvider({ children }: { children: ReactNode }) {
       aiSetting,
       initialize,
       fetchSetting,
+      fetchSettings,
       updateSetting,
     ],
   );
