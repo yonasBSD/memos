@@ -63,7 +63,7 @@ func (s *APIV1Service) GetInstanceProfile(ctx context.Context, _ *v1pb.GetInstan
 }
 
 func (s *APIV1Service) GetInstanceSetting(ctx context.Context, request *v1pb.GetInstanceSettingRequest) (*v1pb.InstanceSetting, error) {
-	return s.getInstanceSetting(ctx, request.Name, &instanceSettingCaller{})
+	return s.getInstanceSettingByName(ctx, request.Name, &instanceSettingCaller{})
 }
 
 // BatchGetInstanceSettings returns multiple instance settings in request order.
@@ -75,7 +75,7 @@ func (s *APIV1Service) BatchGetInstanceSettings(ctx context.Context, request *v1
 	caller := &instanceSettingCaller{}
 	settings := make([]*v1pb.InstanceSetting, 0, len(request.Names))
 	for _, name := range request.Names {
-		setting, err := s.getInstanceSetting(ctx, name, caller)
+		setting, err := s.getInstanceSettingByName(ctx, name, caller)
 		if err != nil {
 			return nil, err
 		}
@@ -85,7 +85,7 @@ func (s *APIV1Service) BatchGetInstanceSettings(ctx context.Context, request *v1
 	return &v1pb.BatchGetInstanceSettingsResponse{Settings: settings}, nil
 }
 
-func (s *APIV1Service) getInstanceSetting(ctx context.Context, name string, caller *instanceSettingCaller) (*v1pb.InstanceSetting, error) {
+func (s *APIV1Service) getInstanceSettingByName(ctx context.Context, name string, caller *instanceSettingCaller) (*v1pb.InstanceSetting, error) {
 	instanceSettingKeyString, err := ExtractInstanceSettingKeyFromName(name)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid instance setting name: %v", err)
