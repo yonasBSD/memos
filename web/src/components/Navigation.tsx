@@ -94,6 +94,7 @@ const Navigation = (props: Props) => {
               }
               key={navLink.id}
               to={navLink.path}
+              end={navLink.path === Routes.HOME}
               id={navLink.id}
               aria-label={navLink.id === "header-inbox" ? inboxAriaLabel : undefined}
               viewTransition
