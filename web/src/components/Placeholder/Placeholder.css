@@ -1,21 +1,45 @@
 /*
- * Animations for <Placeholder>.
+ * Animations for <Placeholder> piece components.
  *
  * Keyframes are wrapped in a prefers-reduced-motion guard so users who opt
- * out of motion see a static bird.
+ * out of motion see static ASCII art.
  */
 
 @media (prefers-reduced-motion: no-preference) {
-  .placeholder-motion-bob {
-    animation: placeholder-bob 3.4s ease-in-out infinite;
+  .placeholder-perched-finch-bob {
+    animation: placeholder-gentle-bob 3.4s ease-in-out infinite;
   }
 
-  .placeholder-motion-flutter {
-    animation: placeholder-flutter 0.7s ease-in-out infinite;
+  .placeholder-nesting-sparrow-breathe {
+    animation: placeholder-soft-breathe 4s ease-in-out infinite;
+  }
+
+  .placeholder-hovering-swift-flutter {
+    animation: placeholder-quick-flutter 0.75s ease-in-out infinite;
+  }
+
+  .placeholder-busy-hummingbird-hover {
+    animation: placeholder-humming-hover 0.55s ease-in-out infinite;
+  }
+
+  .placeholder-searching-owl-look {
+    animation: placeholder-watchful-look 4.2s ease-in-out infinite;
+  }
+
+  .placeholder-curious-crow-tilt {
+    animation: placeholder-curious-tilt 3.8s ease-in-out infinite;
+  }
+
+  .placeholder-wayward-gull-drift {
+    animation: placeholder-slow-drift 3.2s ease-in-out infinite;
+  }
+
+  .placeholder-vanished-perch-sway {
+    animation: placeholder-light-sway 4.6s ease-in-out infinite;
   }
 }
 
-@keyframes placeholder-bob {
+@keyframes placeholder-gentle-bob {
   0%,
   100% {
     transform: translateY(0);
@@ -25,12 +49,72 @@
   }
 }
 
-@keyframes placeholder-flutter {
+@keyframes placeholder-soft-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+@keyframes placeholder-quick-flutter {
   0%,
   100% {
     transform: translate(0, 0);
   }
   50% {
     transform: translate(2px, -1px);
+  }
+}
+
+@keyframes placeholder-humming-hover {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-1px, -2px);
+  }
+}
+
+@keyframes placeholder-watchful-look {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(2px);
+  }
+}
+
+@keyframes placeholder-curious-tilt {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-1deg);
+  }
+}
+
+@keyframes placeholder-slow-drift {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes placeholder-light-sway {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-2px);
   }
 }

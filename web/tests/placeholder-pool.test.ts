@@ -1,3 +1,5 @@
+import { render } from "@testing-library/react";
+import { createElement } from "react";
 import { describe, expect, it } from "vitest";
 import { ASCII_POOL, pickPiece, type PlaceholderVariant } from "@/components/Placeholder/ascii-pool";
 import { DEFAULT_MESSAGES } from "@/components/Placeholder/messages";
@@ -5,10 +7,10 @@ import { DEFAULT_MESSAGES } from "@/components/Placeholder/messages";
 const VARIANTS: PlaceholderVariant[] = ["empty", "loading", "noResults", "notFound"];
 
 describe("ASCII_POOL integrity", () => {
-  it("contains at least one piece per variant", () => {
+  it("contains at least two pieces per variant", () => {
     for (const variant of VARIANTS) {
       const matches = ASCII_POOL.filter((p) => p.variant === variant);
-      expect(matches.length, `variant=${variant}`).toBeGreaterThanOrEqual(1);
+      expect(matches.length, `variant=${variant}`).toBeGreaterThanOrEqual(2);
     }
   });
 
@@ -17,15 +19,30 @@ describe("ASCII_POOL integrity", () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it("preserves the jgs credit on every piece", () => {
+  it("uses non-empty credits for every piece", () => {
     for (const piece of ASCII_POOL) {
-      expect(piece.credit, `piece=${piece.id}`).toMatch(/jgs/);
+      expect(piece.credit.trim().length, `piece=${piece.id}`).toBeGreaterThan(0);
     }
   });
 
-  it("uses a known motion style on every piece", () => {
+  it("uses original Memos credits for bundled pieces", () => {
     for (const piece of ASCII_POOL) {
-      expect(["bob", "flutter", "none"]).toContain(piece.motion);
+      expect(piece.credit, `piece=${piece.id}`).toContain("Memos");
+      expect(piece.credit, `piece=${piece.id}`).not.toMatch(/jgs|Joan Stark/i);
+    }
+  });
+
+  it("registers renderable piece components", () => {
+    for (const piece of ASCII_POOL) {
+      const PieceComponent = piece.Component;
+      const { container, unmount } = render(createElement(PieceComponent));
+      const pre = container.querySelector("pre");
+
+      expect(pre, `piece=${piece.id}`).not.toBeNull();
+      expect(pre, `piece=${piece.id}`).toHaveAttribute("aria-hidden", "true");
+      expect(pre?.textContent?.trim().length, `piece=${piece.id}`).toBeGreaterThan(0);
+
+      unmount();
     }
   });
 });
@@ -36,11 +53,6 @@ describe("pickPiece", () => {
       const piece = pickPiece(variant);
       expect(piece.variant).toBe(variant);
     }
-  });
-
-  it("returns a non-empty ascii string", () => {
-    const piece = pickPiece("empty");
-    expect(piece.ascii.length).toBeGreaterThan(0);
   });
 });
 

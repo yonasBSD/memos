@@ -38,9 +38,10 @@ describe("<Placeholder>", () => {
     expect(pre!.textContent!.length).toBeGreaterThan(0);
   });
 
-  it("does not render the credit string in the UI (attribution lives in CREDITS.md)", () => {
+  it("does not render registry credit strings in the UI", () => {
     render(<Placeholder variant="empty" />);
-    expect(screen.queryByText(/jgs/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Memos original ASCII art/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/jgs|Joan Stark/i)).not.toBeInTheDocument();
   });
 
   it('applies role="status" and aria-live="polite" ONLY when variant=loading', () => {

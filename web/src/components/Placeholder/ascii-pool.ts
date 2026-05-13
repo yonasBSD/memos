@@ -1,71 +1,70 @@
-export type PlaceholderVariant = "empty" | "loading" | "noResults" | "notFound";
+import type { ComponentType } from "react";
+import BusyHummingbird from "./pieces/BusyHummingbird";
+import CuriousCrow from "./pieces/CuriousCrow";
+import HoveringSwift from "./pieces/HoveringSwift";
+import NestingSparrow from "./pieces/NestingSparrow";
+import PerchedFinch from "./pieces/PerchedFinch";
+import SearchingOwl from "./pieces/SearchingOwl";
+import VanishedPerch from "./pieces/VanishedPerch";
+import WaywardGull from "./pieces/WaywardGull";
 
-export type MotionStyle = "bob" | "flutter" | "none";
+export type PlaceholderVariant = "empty" | "loading" | "noResults" | "notFound";
 
 export interface AsciiPiece {
   id: string;
   variant: PlaceholderVariant;
-  ascii: string;
   credit: string;
-  motion: MotionStyle;
+  Component: ComponentType;
 }
 
 export const ASCII_POOL: AsciiPiece[] = [
   {
-    id: "jgs-crested-parrot",
+    id: "memos-perched-finch",
     variant: "empty",
-    credit: "jgs · 4/97",
-    motion: "bob",
-    ascii: `       .---.
-      /   6_6
-      \\_  (__\\
-      //   \\\\
-     ((     ))
-=====""===""=====
-        |||
-         |`,
+    credit: "Memos original ASCII art",
+    Component: PerchedFinch,
   },
   {
-    id: "jgs-hummingbird-sm",
+    id: "memos-nesting-sparrow",
+    variant: "empty",
+    credit: "Memos original ASCII art",
+    Component: NestingSparrow,
+  },
+  {
+    id: "memos-hovering-swift",
     variant: "loading",
-    credit: "jgs · 7/98",
-    motion: "flutter",
-    ascii: `           ,   _
-          { \\/\`o;====-
-     .----'-/\`-/
-      \`'-..-| /
-            /\\/\\
-            \`--\``,
+    credit: "Memos original ASCII art",
+    Component: HoveringSwift,
   },
   {
-    id: "jgs-wide-eyed-owl",
+    id: "memos-busy-hummingbird",
+    variant: "loading",
+    credit: "Memos original ASCII art",
+    Component: BusyHummingbird,
+  },
+  {
+    id: "memos-searching-owl",
     variant: "noResults",
-    credit: "jgs · 2/01",
-    motion: "bob",
-    ascii: `      __       __
-      \\ \`-'"'-\` /
-      / \\_   _/ \\
-      |  d\\_/b  |
-     .'\\   V   /'.
-    /   '-...-'   \\
-    | /         \\ |
-    \\/\\         /\\/
-    ==(||)---(||)==`,
+    credit: "Memos original ASCII art",
+    Component: SearchingOwl,
   },
   {
-    id: "jgs-bird-flown-away",
+    id: "memos-curious-crow",
+    variant: "noResults",
+    credit: "Memos original ASCII art",
+    Component: CuriousCrow,
+  },
+  {
+    id: "memos-wayward-gull",
     variant: "notFound",
-    credit: "jgs · 7/96",
-    motion: "flutter",
-    ascii: `                      ___
-                  _,-' ______
-                .'  .-'  ____7
-               /   /   ___7
-             _|   /  ___7
-           >(')\\ | ___7
-             \\\\/     \\_______
-             '        _======>
-             \`'----\\\\\``,
+    credit: "Memos original ASCII art",
+    Component: WaywardGull,
+  },
+  {
+    id: "memos-vanished-perch",
+    variant: "notFound",
+    credit: "Memos original ASCII art",
+    Component: VanishedPerch,
   },
 ];
 
