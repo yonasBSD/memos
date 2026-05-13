@@ -30,12 +30,27 @@ describe("<Placeholder>", () => {
     expect(screen.queryByText(DEFAULT_MESSAGES.empty)).not.toBeInTheDocument();
   });
 
-  it("renders the ASCII art inside a <pre> with aria-hidden", () => {
+  it("renders a 32px sprite tileset at a crisp 2x display scale", () => {
     const { container } = render(<Placeholder variant="empty" />);
-    const pre = container.querySelector("pre");
-    expect(pre).not.toBeNull();
-    expect(pre).toHaveAttribute("aria-hidden", "true");
-    expect(pre!.textContent!.length).toBeGreaterThan(0);
+    const viewport = screen.getByTestId("placeholder-sprite");
+    const strip = viewport.firstElementChild;
+
+    expect(viewport).toHaveAttribute("aria-hidden", "true");
+    expect(viewport).toHaveStyle({
+      width: "64px",
+      height: "64px",
+      overflow: "hidden",
+    });
+    expect(strip).toHaveAttribute("src", expect.stringMatching(/(\.svg|data:image\/svg\+xml)/));
+    expect(strip).toHaveAttribute("width", expect.stringMatching(/^(128|160|192)$/));
+    expect(strip).toHaveAttribute("height", "32");
+    expect(["256px", "320px", "384px"]).toContain((strip as HTMLElement).style.width);
+    expect(["steps(4)", "steps(5)", "steps(6)"]).toContain((strip as HTMLElement).style.animationTimingFunction);
+    expect(strip).toHaveStyle({
+      height: "64px",
+      imageRendering: "pixelated",
+    });
+    expect(container.firstChild).toHaveClass("max-w-md");
   });
 
   it("does not render registry credit strings in the UI", () => {

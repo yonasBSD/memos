@@ -1,64 +1,33 @@
-import { render } from "@testing-library/react";
-import { createElement } from "react";
 import { describe, expect, it } from "vitest";
-import { ASCII_POOL, pickPiece, type PlaceholderVariant } from "@/components/Placeholder/ascii-pool";
-import { DEFAULT_MESSAGES } from "@/components/Placeholder/messages";
+import { TILE_SPRITES, pickTileSprite } from "@/components/Placeholder/tileSprites";
+import { DEFAULT_MESSAGES, type PlaceholderVariant } from "@/components/Placeholder/messages";
 
-const VARIANTS: PlaceholderVariant[] = ["empty", "loading", "noResults", "notFound"];
+describe("TILE_SPRITES integrity", () => {
+  it("registers 32px by 32px sprite strips with animation-specific frame counts", () => {
+    expect(TILE_SPRITES.map((sprite) => sprite.name)).toEqual(["OwlBlink", "FalconIdle"]);
+    expect(TILE_SPRITES.map((sprite) => [sprite.name, sprite.frames])).toEqual([
+      ["OwlBlink", 5],
+      ["FalconIdle", 4],
+    ]);
 
-describe("ASCII_POOL integrity", () => {
-  it("contains at least two pieces per variant", () => {
-    for (const variant of VARIANTS) {
-      const matches = ASCII_POOL.filter((p) => p.variant === variant);
-      expect(matches.length, `variant=${variant}`).toBeGreaterThanOrEqual(2);
+    for (const sprite of TILE_SPRITES) {
+      expect(sprite.name).toMatch(/^[A-Z][A-Za-z]+(Idle|Hop|Blink|Drift|Flutter|Hover)$/);
+      expect(sprite.frameWidth).toBe(32);
+      expect(sprite.frameHeight).toBe(32);
+      expect(sprite.frames).toBeGreaterThanOrEqual(2);
+      expect(sprite.src).toMatch(/(\.svg|data:image\/svg\+xml)/);
     }
   });
 
-  it("uses unique ids", () => {
-    const ids = ASCII_POOL.map((p) => p.id);
-    expect(new Set(ids).size).toBe(ids.length);
-  });
-
-  it("uses non-empty credits for every piece", () => {
-    for (const piece of ASCII_POOL) {
-      expect(piece.credit.trim().length, `piece=${piece.id}`).toBeGreaterThan(0);
-    }
-  });
-
-  it("uses original Memos credits for bundled pieces", () => {
-    for (const piece of ASCII_POOL) {
-      expect(piece.credit, `piece=${piece.id}`).toContain("Memos");
-      expect(piece.credit, `piece=${piece.id}`).not.toMatch(/jgs|Joan Stark/i);
-    }
-  });
-
-  it("registers renderable piece components", () => {
-    for (const piece of ASCII_POOL) {
-      const PieceComponent = piece.Component;
-      const { container, unmount } = render(createElement(PieceComponent));
-      const pre = container.querySelector("pre");
-
-      expect(pre, `piece=${piece.id}`).not.toBeNull();
-      expect(pre, `piece=${piece.id}`).toHaveAttribute("aria-hidden", "true");
-      expect(pre?.textContent?.trim().length, `piece=${piece.id}`).toBeGreaterThan(0);
-
-      unmount();
-    }
-  });
-});
-
-describe("pickPiece", () => {
-  it("returns a piece matching the requested variant", () => {
-    for (const variant of VARIANTS) {
-      const piece = pickPiece(variant);
-      expect(piece.variant).toBe(variant);
-    }
+  it("returns a registered tile sprite from the pool", () => {
+    const sprite = pickTileSprite();
+    expect(TILE_SPRITES).toContain(sprite);
   });
 });
 
 describe("DEFAULT_MESSAGES", () => {
   it("provides a non-empty message for every variant", () => {
-    for (const variant of VARIANTS) {
+    for (const variant of Object.keys(DEFAULT_MESSAGES) as PlaceholderVariant[]) {
       expect(DEFAULT_MESSAGES[variant], `variant=${variant}`).toBeTruthy();
       expect(DEFAULT_MESSAGES[variant].trim().length).toBeGreaterThan(0);
     }
