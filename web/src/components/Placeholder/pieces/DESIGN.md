@@ -46,3 +46,4 @@ Avoid padding an animation with duplicate frames just to hit a standard count. A
 
 - `OwlBlink.svg`: five-frame blink/idle strip with breathing wings, blink, and ear-feather settle.
 - `FalconIdle.svg`: four-frame idle strip with breathing, blink, alert head shift, and tail flick.
+- `WoodpeckerPeck.svg`: six-frame tree-trunk peck strip with red crest, chisel beak, barred wing, impact chips, recoil, and settle.

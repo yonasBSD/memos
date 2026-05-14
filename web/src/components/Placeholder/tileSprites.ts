@@ -1,5 +1,6 @@
 import FalconIdle from "./pieces/FalconIdle.svg?url";
 import OwlBlink from "./pieces/OwlBlink.svg?url";
+import WoodpeckerPeck from "./pieces/WoodpeckerPeck.svg?url";
 
 export interface TileSprite {
   name: string;
@@ -26,6 +27,14 @@ export const TILE_SPRITES: TileSprite[] = [
     frameHeight: 32,
     frames: 4,
     duration: 960,
+  },
+  {
+    name: "WoodpeckerPeck",
+    src: WoodpeckerPeck,
+    frameWidth: 32,
+    frameHeight: 32,
+    frames: 6,
+    duration: 1080,
   },
 ];
 

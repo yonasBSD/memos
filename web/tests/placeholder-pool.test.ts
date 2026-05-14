@@ -4,14 +4,15 @@ import { DEFAULT_MESSAGES, type PlaceholderVariant } from "@/components/Placehol
 
 describe("TILE_SPRITES integrity", () => {
   it("registers 32px by 32px sprite strips with animation-specific frame counts", () => {
-    expect(TILE_SPRITES.map((sprite) => sprite.name)).toEqual(["OwlBlink", "FalconIdle"]);
+    expect(TILE_SPRITES.map((sprite) => sprite.name)).toEqual(["OwlBlink", "FalconIdle", "WoodpeckerPeck"]);
     expect(TILE_SPRITES.map((sprite) => [sprite.name, sprite.frames])).toEqual([
       ["OwlBlink", 5],
       ["FalconIdle", 4],
+      ["WoodpeckerPeck", 6],
     ]);
 
     for (const sprite of TILE_SPRITES) {
-      expect(sprite.name).toMatch(/^[A-Z][A-Za-z]+(Idle|Hop|Blink|Drift|Flutter|Hover)$/);
+      expect(sprite.name).toMatch(/^[A-Z][A-Za-z]+(Idle|Hop|Blink|Drift|Flutter|Hover|Peck)$/);
       expect(sprite.frameWidth).toBe(32);
       expect(sprite.frameHeight).toBe(32);
       expect(sprite.frames).toBeGreaterThanOrEqual(2);
