@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="128" height="32" viewBox="0 0 128 32" role="img" aria-labelledby="title desc" shape-rendering="crispEdges">
-  <title id="title">Falcon idle pixel tileset</title>
-  <desc id="desc">A four-frame 32 by 32 pixel falcon idle animation strip.</desc>
+  <title id="title">Eagle idle pixel tileset</title>
+  <desc id="desc">A four-frame 32 by 32 pixel eagle idle animation strip.</desc>
   <defs>
     <style>
       .outline { fill: #120f0d; }
@@ -19,7 +19,7 @@
       .eye-light { fill: #ffd069; }
     </style>
 
-    <symbol id="falcon-head" viewBox="0 0 32 32">
+    <symbol id="eagle-head" viewBox="0 0 32 32">
       <path class="outline" d="M14 2h10v1h1v12h2v3h-1v1h-4v-2h-3v-3h-3v-2h-2V9H5V8h1V6h5V4h3V2z" />
       <path class="head" d="M15 4h8v1h1v10h2v2h-3v-2h-3v-3h-3v-2h-2V8h-4V6h4V4z" />
       <rect class="head-shadow" x="16" y="14" width="3" height="2" />
@@ -34,14 +34,14 @@
       <rect class="beak-shadow" x="6" y="15" width="8" height="1" />
     </symbol>
 
-    <symbol id="falcon-head-alert" viewBox="0 0 32 32">
-      <use href="#falcon-head" x="-1" />
+    <symbol id="eagle-head-alert" viewBox="0 0 32 32">
+      <use href="#eagle-head" x="-1" />
       <rect class="outline" x="18" y="7" width="4" height="1" />
       <rect class="eye" x="19" y="8" width="2" height="2" />
       <rect class="eye-light" x="20" y="8" width="1" height="1" />
     </symbol>
 
-    <symbol id="falcon-body" viewBox="0 0 32 32">
+    <symbol id="eagle-body" viewBox="0 0 32 32">
       <path class="outline" d="M7 15h17v2h2v9h-2v3h-4v2H10v-2H7v-3H6v-9h1v-2z" />
       <path class="body" d="M9 16h14v2h1v8h-2v2H12v-2H9V16z" />
       <path class="wing" d="M7 17h3v9H8v-1H7v-8z" />
@@ -65,8 +65,8 @@
       <path class="claw" d="M20 26h1v3h2v1h-5v-1h2v-3z" />
     </symbol>
 
-    <symbol id="falcon-body-breathe" viewBox="0 0 32 32">
-      <use href="#falcon-body" />
+    <symbol id="eagle-body-breathe" viewBox="0 0 32 32">
+      <use href="#eagle-body" />
       <rect class="outline" x="7" y="16" width="3" height="1" />
       <rect class="wing" x="7" y="18" width="3" height="8" />
       <rect class="outline" x="23" y="16" width="3" height="1" />
@@ -74,49 +74,49 @@
       <rect class="body" x="11" y="17" width="10" height="1" />
     </symbol>
 
-    <symbol id="falcon-tail" viewBox="0 0 32 32">
+    <symbol id="eagle-tail" viewBox="0 0 32 32">
       <path class="outline" d="M23 23h3v2h3v1h2v3h-2v1h-5v-2h-2v-3h1v-2z" />
       <path class="body-dark" d="M23 24h3v2h2v1h-4v-1h-1v-2z" />
       <rect class="tail-tip" x="26" y="25" width="2" height="2" />
       <rect class="tail-tip" x="24" y="27" width="2" height="1" />
     </symbol>
 
-    <symbol id="falcon-tail-flick" viewBox="0 0 32 32">
+    <symbol id="eagle-tail-flick" viewBox="0 0 32 32">
       <path class="outline" d="M23 22h3v2h3v1h2v3h-2v1h-5v-2h-2v-3h1v-2z" />
       <path class="body-dark" d="M23 23h3v2h2v1h-4v-1h-1v-2z" />
       <rect class="tail-tip" x="26" y="24" width="2" height="2" />
       <rect class="tail-tip" x="24" y="26" width="2" height="1" />
     </symbol>
 
-    <symbol id="falcon-idle-a" viewBox="0 0 32 32">
-      <use href="#falcon-tail" />
-      <use href="#falcon-body" />
-      <use href="#falcon-head" />
+    <symbol id="eagle-idle-a" viewBox="0 0 32 32">
+      <use href="#eagle-tail" />
+      <use href="#eagle-body" />
+      <use href="#eagle-head" />
     </symbol>
 
-    <symbol id="falcon-idle-b" viewBox="0 0 32 32">
-      <use href="#falcon-tail" />
-      <use href="#falcon-body-breathe" />
-      <use href="#falcon-head" />
+    <symbol id="eagle-idle-b" viewBox="0 0 32 32">
+      <use href="#eagle-tail" />
+      <use href="#eagle-body-breathe" />
+      <use href="#eagle-head" />
     </symbol>
 
-    <symbol id="falcon-idle-blink" viewBox="0 0 32 32">
-      <use href="#falcon-tail" />
-      <use href="#falcon-body" />
-      <use href="#falcon-head" />
+    <symbol id="eagle-idle-blink" viewBox="0 0 32 32">
+      <use href="#eagle-tail" />
+      <use href="#eagle-body" />
+      <use href="#eagle-head" />
       <rect class="head" x="20" y="8" width="2" height="2" />
       <rect class="outline" x="19" y="8" width="3" height="1" />
     </symbol>
 
-    <symbol id="falcon-idle-c" viewBox="0 0 32 32">
-      <use href="#falcon-tail-flick" />
-      <use href="#falcon-body" />
-      <use href="#falcon-head-alert" />
+    <symbol id="eagle-idle-c" viewBox="0 0 32 32">
+      <use href="#eagle-tail-flick" />
+      <use href="#eagle-body" />
+      <use href="#eagle-head-alert" />
     </symbol>
   </defs>
 
-  <use href="#falcon-idle-a" x="0" y="0" width="32" height="32" />
-  <use href="#falcon-idle-b" x="32" y="0" width="32" height="32" />
-  <use href="#falcon-idle-blink" x="64" y="0" width="32" height="32" />
-  <use href="#falcon-idle-c" x="96" y="0" width="32" height="32" />
+  <use href="#eagle-idle-a" x="0" y="0" width="32" height="32" />
+  <use href="#eagle-idle-b" x="32" y="0" width="32" height="32" />
+  <use href="#eagle-idle-blink" x="64" y="0" width="32" height="32" />
+  <use href="#eagle-idle-c" x="96" y="0" width="32" height="32" />
 </svg>

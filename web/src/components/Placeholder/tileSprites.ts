@@ -1,6 +1,6 @@
-import FalconIdle from "./pieces/FalconIdle.svg?url";
+import EagleIdle from "./pieces/EagleIdle.svg?url";
 import OwlBlink from "./pieces/OwlBlink.svg?url";
-import WoodpeckerPeck from "./pieces/WoodpeckerPeck.svg?url";
+import ToucanIdle from "./pieces/ToucanIdle.svg?url";
 
 export interface TileSprite {
   name: string;
@@ -21,20 +21,20 @@ export const TILE_SPRITES: TileSprite[] = [
     duration: 1500,
   },
   {
-    name: "FalconIdle",
-    src: FalconIdle,
+    name: "EagleIdle",
+    src: EagleIdle,
     frameWidth: 32,
     frameHeight: 32,
     frames: 4,
     duration: 960,
   },
   {
-    name: "WoodpeckerPeck",
-    src: WoodpeckerPeck,
+    name: "ToucanIdle",
+    src: ToucanIdle,
     frameWidth: 32,
     frameHeight: 32,
-    frames: 6,
-    duration: 1080,
+    frames: 4,
+    duration: 1120,
   },
 ];
 

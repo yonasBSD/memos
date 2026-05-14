@@ -25,6 +25,7 @@ function lazyWithReload<T extends React.ComponentType>(factory: () => Promise<{ 
 }
 
 const AdminSignIn = lazyWithReload(() => import("@/pages/AdminSignIn"));
+const About = lazyWithReload(() => import("@/pages/About"));
 const Archived = lazyWithReload(() => import("@/pages/Archived"));
 const AuthCallback = lazyWithReload(() => import("@/pages/AuthCallback"));
 const Explore = lazyWithReload(() => import("@/pages/Explore"));
@@ -84,6 +85,7 @@ export const routeConfig: RouteObject[] = [
                 element: <LandingRoute />,
                 children: [{ index: true, element: <Home /> }],
               },
+              { path: Routes.ABOUT, element: <About /> },
               { path: Routes.EXPLORE, element: <Explore /> },
               { path: "u/:username", element: <UserProfile /> },
               {

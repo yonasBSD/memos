@@ -12,8 +12,8 @@ These SVGs are pixel-art tile strips for the placeholder component. They should 
 
 ## Naming
 
-- Start with the animal name, for example `Owl` or `Falcon`.
-- Add the animation name when needed, for example `OwlBlink` or `FalconIdle`.
+- Start with the animal name, for example `Owl` or `Eagle`.
+- Add the animation name when needed, for example `OwlBlink` or `EagleIdle`.
 - Do not name assets after UI states or empty-state scenarios.
 
 ## Frame Count
@@ -45,5 +45,5 @@ Avoid padding an animation with duplicate frames just to hit a standard count. A
 ## Current Assets
 
 - `OwlBlink.svg`: five-frame blink/idle strip with breathing wings, blink, and ear-feather settle.
-- `FalconIdle.svg`: four-frame idle strip with breathing, blink, alert head shift, and tail flick.
-- `WoodpeckerPeck.svg`: six-frame tree-trunk peck strip with red crest, chisel beak, barred wing, impact chips, recoil, and settle.
+- `EagleIdle.svg`: four-frame idle strip with breathing, blink, alert head shift, and tail flick.
+- `ToucanIdle.svg`: four-frame idle strip with beak bob, chest breathing, blink, tail flick, and settle.
