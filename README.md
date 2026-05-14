@@ -1,14 +1,23 @@
 <div align="center">
-  <p>
-    <span>Featured Sponsor:</span>
-    <a href="https://go.warp.dev/memos" target="_blank" rel="noopener">
-      <b>Warp</b>
-      <span>— The AI-powered terminal built for speed and collaboration</span>
-    </a>
-  </p>
-  <a href="https://go.warp.dev/memos" target="_blank" rel="noopener">
-    <img alt="Warp sponsorship" height="196" src="https://raw.githubusercontent.com/warpdotdev/brand-assets/refs/heads/main/Github/Sponsor/Warp-Github-LG-03.png">
-  </a>
+  <p><b>Featured Sponsors</b></p>
+  <table>
+    <tr>
+      <td align="center" width="50%">
+        <a href="https://go.warp.dev/memos" target="_blank" rel="noopener">
+          <img alt="Warp" height="44" src="https://raw.githubusercontent.com/warpdotdev/brand-assets/refs/heads/main/Logos/Warp-Wordmark-Black.png" />
+          <br/>
+          <span>Warp is an agentic development environment.</span>
+        </a>
+      </td>
+      <td align="center" width="50%">
+        <a href="https://coderabbit.link/usememos" target="_blank" rel="noopener">
+          <img alt="CodeRabbit" height="44" src="https://victorious-bubble-f69a016683.media.strapiapp.com/Orange_Typemark_43bf516c9d.svg" />
+          <br/>
+          <span>Cut code review time &amp; bugs in half, instantly.</span>
+        </a>
+      </td>
+    </tr>
+  </table>
 </div>
 
 # Memos
@@ -25,15 +34,7 @@ Open-source, self-hosted note-taking tool built for quick capture. Markdown-nati
 
 <img src="https://raw.githubusercontent.com/usememos/.github/refs/heads/main/assets/demo.png" alt="Memos Demo Screenshot" height="512" />
 
-### 💎 Featured Sponsors
-
-[**Warp** — The AI-powered terminal built for speed and collaboration](https://go.warp.dev/memos)
-
-<a href="https://go.warp.dev/memos" target="_blank" rel="noopener">
-  <img src="https://raw.githubusercontent.com/warpdotdev/brand-assets/refs/heads/main/Logos/Warp-Wordmark-Black.png" alt="Warp - The AI-powered terminal built for speed and collaboration" height="44" />
-</a>
-
-<p></p>
+### Sponsors
 
 [**TestMu AI** - The world’s first full-stack Agentic AI Quality Engineering platform](https://www.testmuai.com/?utm_medium=sponsor&utm_source=memos)
 
