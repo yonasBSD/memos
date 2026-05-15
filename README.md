@@ -4,18 +4,22 @@
     <tr>
       <td align="center" width="50%">
         <a href="https://go.warp.dev/memos" target="_blank" rel="noopener">
-          <img alt="Warp" height="44" src="https://raw.githubusercontent.com/warpdotdev/brand-assets/refs/heads/main/Logos/Warp-Wordmark-Black.png" />
+          <picture>
+            <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/warpdotdev/brand-assets/refs/heads/main/Logos/Warp-Wordmark-White.png" />
+            <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/warpdotdev/brand-assets/refs/heads/main/Logos/Warp-Wordmark-Black.png" />
+            <img alt="Warp" height="44" src="https://raw.githubusercontent.com/warpdotdev/brand-assets/refs/heads/main/Logos/Warp-Wordmark-Black.png" />
+          </picture>
           <br/>
           <span>Warp is an agentic development environment.</span>
         </a>
       </td>
       <td align="center" width="50%">
         <a href="https://coderabbit.link/usememos" target="_blank" rel="noopener">
-        <picture>
-          <source media="(prefers-color-scheme: dark)" srcset="https://victorious-bubble-f69a016683.media.strapiapp.com/White_Typemark_79b9189d19.svg">
-          <source media="(prefers-color-scheme: light)" srcset="https://victorious-bubble-f69a016683.media.strapiapp.com/Orange_Typemark_43bf516c9d.svg">
-          <img alt="CodeRabbit" height="44" src="https://victorious-bubble-f69a016683.media.strapiapp.com/Orange_Typemark_43bf516c9d.svg" />
-        </picture>
+          <picture>
+            <source media="(prefers-color-scheme: dark)" srcset="https://victorious-bubble-f69a016683.media.strapiapp.com/White_Typemark_79b9189d19.svg" />
+            <source media="(prefers-color-scheme: light)" srcset="https://victorious-bubble-f69a016683.media.strapiapp.com/Orange_Typemark_43bf516c9d.svg" />
+            <img alt="CodeRabbit" height="44" src="https://victorious-bubble-f69a016683.media.strapiapp.com/Orange_Typemark_43bf516c9d.svg" />
+          </picture>
           <br/>
           <span>Cut code review time &amp; bugs in half, instantly.</span>
         </a>
@@ -43,7 +47,11 @@ Open-source, self-hosted note-taking tool built for quick capture. Markdown-nati
 [**TestMu AI** - The world’s first full-stack Agentic AI Quality Engineering platform](https://www.testmuai.com/?utm_medium=sponsor&utm_source=memos)
 
 <a href="https://www.testmuai.com/?utm_medium=sponsor&utm_source=memos" target="_blank" rel="noopener">
-  <img src="https://usememos.com/sponsors/testmu.svg" alt="TestMu AI" height="36" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://usememos.com/sponsors/testmu-dark.svg" />
+    <source media="(prefers-color-scheme: light)" srcset="https://usememos.com/sponsors/testmu.svg" />
+    <img src="https://usememos.com/sponsors/testmu.svg" alt="TestMu AI" height="36" />
+  </picture>
 </a>
 
 <p></p>
@@ -59,7 +67,11 @@ Open-source, self-hosted note-taking tool built for quick capture. Markdown-nati
 [**InstaPods** - Get your app online in seconds](https://instapods.com/?utm_source=memos&utm_medium=sponsor) • [Deploy Memos in 30 Seconds](https://instapods.com/apps/memos/?utm_source=memos&utm_medium=sponsor)
 
 <a href="https://instapods.com/?utm_source=memos&utm_medium=sponsor" target="_blank" rel="noopener">
-  <img src="https://raw.githubusercontent.com/usememos/dotcom/main/public/sponsors/instapods.svg" alt="InstaPods" height="72" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/usememos/dotcom/main/public/sponsors/instapods-dark.svg" />
+    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/usememos/dotcom/main/public/sponsors/instapods.svg" />
+    <img src="https://raw.githubusercontent.com/usememos/dotcom/main/public/sponsors/instapods.svg" alt="InstaPods" height="72" />
+  </picture>
 </a>
 
 ## Features
